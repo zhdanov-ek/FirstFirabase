@@ -15,11 +15,26 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.firebase.ui.auth.AuthUI;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+
+/**
+ * FireBase работает следующим образом:
+ * 1) Получив ссылку на БД мы можем вносить данные или что-то менять
+ * 2) Для получения данных в программу мы должны описать лисенеры на определенные события,
+ *      конкретных дочерних элементов БД. Именно лисенеры и возвратят нам данные, которые
+ *      будем использовать для отображения в программе.
+ * 3) БД работает и офлайн при включенном setPersistenceEnabled. Все изменения в БД будут хранится
+ *      в программе пока не появится инет. После этого все синхронизируется
+ * 4) Для многопользовательского доступа к изменениям в БД предусмотренны транзакции
+ * */
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     EditText etName, etPhone, etUser;
     TextView tvInfo;
 
-    private final static String TAG = "FirstFirebase";
+    private final static String TAG = "DEBUG";
 
     // в этом ключе хранятся записи с карточками
     private final static String CHILD_LIST = "list";
@@ -47,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         ctx = this;
         activity_main = (LinearLayout)findViewById(R.id.activity_main);
@@ -97,12 +113,14 @@ public class MainActivity extends AppCompatActivity {
             // Получаем ссылку на базу
             mDatabase = FirebaseDatabase.getInstance().getReference();
 
-            // Описываем слушатель и его действия
+            // Описываем слушатель, который возвращает в программу весь список данных,
+            // которые находятся в child(CHILD_LIST)
+            // В итоге при любом изменении вся база перезаливается с БД в программу
             ValueEventListener contactCardListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     long num = dataSnapshot.getChildrenCount();
-                    Log.d(TAG, "onDataChange: total Children objects:" + num);
+                    Log.d(TAG, "Load all list ContactCards: total Children objects:" + num);
                     tvInfo.setText("Total count of cards: " + num + "\n");
                     for (DataSnapshot child: dataSnapshot.getChildren()) {
                         ContactCard contactCard = child.getValue(ContactCard.class);
@@ -117,10 +135,16 @@ public class MainActivity extends AppCompatActivity {
                 }
             };
 
-            // устанавливаем слушатель на изменения в нешей базе в нужном разделе
+            // устанавливаем слушатель на изменения в нашей базе в разделе контактов
             mDatabase.child(CHILD_LIST).addValueEventListener(contactCardListener);
+
+            // слушатель на изменения полей потомка CHILD_USERS
+            mDatabase.child(CHILD_USERS).addChildEventListener(childUserEventListener);
         }
     }
+
+
+
 
 
     /** Получаем результат работы с окном авторизации */
@@ -146,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
     private void removeContact(){
         if (etName.getText().length() > 0) {
             mDatabase.child(CHILD_LIST).child(etName.getText().toString()).removeValue();
+            etName.setText("");
         } else {
             Toast.makeText(ctx, "Name is empty!", Toast.LENGTH_SHORT).show();
         }
@@ -189,6 +214,37 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    /** Слушает изменения внутри потомка и возвращает только измененное значение и его ключ
+     * Мы мониторим список в потомке CHILD_USERS. Каждое событие отрабатывается отдельно, что
+     * очень экономично.
+     * Событие срабатывает при любых изменениях данных: как с программы так и с коносоли */
+    ChildEventListener childUserEventListener = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
+            Log.d(TAG, "onChildAdded: " + dataSnapshot.toString());
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
+            Log.d(TAG, "onChilChanged: " +  dataSnapshot.toString());
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {
+            Log.d(TAG, "onChildRemoved: " +  dataSnapshot.toString());
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
+            Log.d(TAG, "onChildMoved: " +  dataSnapshot.toString());
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
     /** Добавляем юзеров в БД:
      * Сначала создаем укникальный ключ  и потом уже имея это значение помещаем туда нашего юзера */
     private void addUser(){
@@ -202,4 +258,6 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(ctx, "Field user is empty!", Toast.LENGTH_SHORT).show();
         }
     }
+
+
 }
