@@ -25,11 +25,17 @@ public class MainActivity extends AppCompatActivity {
 
     private final static int SIGN_IN_REQUEST_CODE = 99;
     LinearLayout activity_main;
-    Button btnAdd, btnRemove, btnSignOut;
-    EditText etName, etPhone;
+    Button btnAdd, btnRemove, btnSignOut, btnAddUser;
+    EditText etName, etPhone, etUser;
     TextView tvInfo;
 
     private final static String TAG = "FirstFirebase";
+
+    // в этом ключе хранятся записи с карточками
+    private final static String CHILD_LIST = "list";
+
+    // тут хранятся юзеры
+    private final static String CHILD_USERS = "users";
     Context ctx;
 
     // Через эту сущность мы записываем данные в базу и обновляем списки на устройстве
@@ -47,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         etName = (EditText)findViewById(R.id.etName);
         etPhone = (EditText)findViewById(R.id.etPhone);
         tvInfo = (TextView) findViewById(R.id.tvInfo);
+        etUser = (EditText)findViewById(R.id.etUser);
 
         btnSignOut = (Button)findViewById(R.id.btnSignOut);
         btnSignOut.setOnClickListener(new View.OnClickListener() {
@@ -69,6 +76,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 removeContact();
+            }
+        });
+
+        btnAddUser = (Button)findViewById(R.id.btnAddUser);
+        btnAddUser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addUser();
             }
         });
 
@@ -103,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
             };
 
             // устанавливаем слушатель на изменения в нешей базе в нужном разделе
-            mDatabase.child("list").addValueEventListener(contactCardListener);
+            mDatabase.child(CHILD_LIST).addValueEventListener(contactCardListener);
         }
     }
 
@@ -130,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
      * */
     private void removeContact(){
         if (etName.getText().length() > 0) {
-            mDatabase.child("list").child(etName.getText().toString()).removeValue();
+            mDatabase.child(CHILD_LIST).child(etName.getText().toString()).removeValue();
         } else {
             Toast.makeText(ctx, "Name is empty!", Toast.LENGTH_SHORT).show();
         }
@@ -165,11 +180,26 @@ public class MainActivity extends AppCompatActivity {
         // .child(name) - формирует ключ внутри которого создается сам объект. Если такой ключ
         //                  уже есть то все данные внутри ключа перезапишутся
         if ((name.length() != 0) && (phone.length() != 0)) {
-            mDatabase.child("list").child(name).setValue(new ContactCard(name, phone, autor));
+            mDatabase.child(CHILD_LIST).child(name).setValue(new ContactCard(name, phone, autor));
             etName.setText("");
             etPhone.setText("");
         } else {
             Toast.makeText(ctx, "Fields is empty!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    /** Добавляем юзеров в БД:
+     * Сначала создаем укникальный ключ  и потом уже имея это значение помещаем туда нашего юзера */
+    private void addUser(){
+        String user = etUser.getText().toString();
+        if (! user.isEmpty()) {
+            String key = mDatabase.child(CHILD_USERS).push().getKey();
+            mDatabase.child(CHILD_USERS).child(key).setValue(user);
+            Toast.makeText(ctx, "New user " + user + " saved.", Toast.LENGTH_SHORT).show();
+            etUser.setText("");
+        } else {
+            Toast.makeText(ctx, "Field user is empty!", Toast.LENGTH_SHORT).show();
         }
     }
 }
