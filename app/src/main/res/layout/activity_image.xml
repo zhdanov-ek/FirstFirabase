@@ -13,8 +13,8 @@
     tools:context="com.example.gek.firstfirebase.ImageActivity">
 
     <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
         android:id="@+id/ivImage"
         android:padding="15dp"/>
 
@@ -37,4 +37,14 @@
             android:id="@+id/btnSend"/>
     </LinearLayout>
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </ScrollView>
 </LinearLayout>
