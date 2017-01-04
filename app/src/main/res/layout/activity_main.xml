@@ -102,4 +102,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="INFO" />
+    <Button
+        android:id="@+id/btnImage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Load image to server" />
+
 </LinearLayout>

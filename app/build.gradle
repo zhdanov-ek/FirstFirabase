@@ -29,8 +29,12 @@ dependencies {
     testCompile 'junit:junit:4.12'
 
     //Add Library
+    compile 'com.google.firebase:firebase-storage:9.6.0'
+    compile 'com.google.firebase:firebase-database:9.6.0'
+    compile 'com.firebaseui:firebase-ui-auth:0.6.0'
 
-    compile 'com.firebaseui:firebase-ui:0.6.2'
+
+
 }
 
 

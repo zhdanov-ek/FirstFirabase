@@ -103,6 +103,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        findViewById(R.id.btnImage).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(ctx, ImageActivity.class));
+            }
+        });
+
         /** Если нет авторизации то выводим окно для нее */
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             startActivityForResult(AuthUI.getInstance()
