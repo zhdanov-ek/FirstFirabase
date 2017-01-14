@@ -111,7 +111,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         /** Если нет авторизации то выводим окно для нее */
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() == null) {
             startActivityForResult(AuthUI.getInstance()
                     .createSignInIntentBuilder()
                     .build(), SIGN_IN_REQUEST_CODE);
